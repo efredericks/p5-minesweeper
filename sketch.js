@@ -1,6 +1,7 @@
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
 
 // QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
+// shift-click to clear
 
 let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
@@ -374,7 +375,7 @@ function mousePressed() {
           num_marked--;
 
         } else clicked_cell.state = GRID_STATE.COVERED;
-      } else if (mouseButton == CENTER) {
+      } else if (mouseButton == CENTER || (mouseButton == LEFT && keyIsPressed && key == "Shift")) {
         let visited = [];
         let retval = checkNeighborsValued(clicked_cell, visited);
 
