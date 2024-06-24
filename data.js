@@ -14,7 +14,9 @@ GAME_DATA = {
 // Game state machine
 let STATES = {
   PLAYING: 0,
-  GAMEOVER: 1,
+  GAME_WON: 1,
+  GAME_LOST: 2,
+  // GAMEOVER: 1,
 }
 
 // visible state of grid

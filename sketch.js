@@ -67,9 +67,13 @@ function draw() {
     drawGame();
 
     dirty = false;
-  } else if (game_state == STATES.GAMEOVER) { // animate explosions and then reset
+  } else if (game_state == STATES.GAME_WON || game_state == STATES.GAME_LOST) { // animate explosions and then reset
     background(bgcol);
-    fill(color(255, 0, 0, 20));
+
+    if (game_state == STATES.GAME_LOST)
+      fill(color(255, 0, 0, 20));
+    else
+      fill(color(0, 255, 0, 20));
     noStroke();
     rect(0, 0, width, height);
     drawGame();
@@ -169,9 +173,13 @@ function drawGame() {
   let half_icon = icon_size / 2;
   let quarter_icon = icon_size / 4;
 
-  if (game_state == STATES.GAMEOVER) {
+  if (game_state == STATES.GAME_LOST) {
     let sx = SPRITES.face_mad.c * 16;
     let sy = SPRITES.face_mad.r * 16;
+    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
+  } else if (game_state == STATES.GAME_WON) {
+    let sx = SPRITES.face_happy.c * 16;
+    let sy = SPRITES.face_happy.r * 16;
     image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
 
   } else { // playing
@@ -229,15 +237,15 @@ function drawGame() {
   //   alert("ERROR: NOT HANDLED");
   // }
 
-  tx = width - ui_w*0.80;
-  ty = icon_size+icon_size*0.85;
+  tx = width - ui_w * 0.80;
+  ty = icon_size + icon_size * 0.85;
   sx = SPRITES.bomb.c * 16;
   sy = SPRITES.bomb.r * 16;
   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
 
   sx = SPRITES.marked.c * 16;
   sy = SPRITES.marked.r * 16;
-  image(spritesheet, tx, ty+half_icon, half_icon, half_icon, sx, sy, 16, 16);
+  image(spritesheet, tx, ty + half_icon, half_icon, half_icon, sx, sy, 16, 16);
 
   ty += quarter_icon;
 
@@ -246,7 +254,7 @@ function drawGame() {
   text(
     `${GAME_DATA[current_difficulty].num_mines}`,
     width - ui_w / 2,
-   ty 
+    ty
   );
   ty += 48;
   text(
@@ -352,55 +360,55 @@ function checkPress(x, y) {
 
 function mousePressed() {
   if (game_state == STATES.PLAYING) {
-  hovering = null;
-  let clicked_cell = checkPress(mouseX, mouseY);
-  if (clicked_cell != null) {
-    if (mouseButton == RIGHT && clicked_cell.state != GRID_STATE.CLEAR) {
-      // go between options
-      if (clicked_cell.state == GRID_STATE.COVERED) {
-        clicked_cell.state = GRID_STATE.FLAGGED;
-        num_marked++;
+    hovering = null;
+    let clicked_cell = checkPress(mouseX, mouseY);
+    if (clicked_cell != null) {
+      if (mouseButton == RIGHT && clicked_cell.state != GRID_STATE.CLEAR) {
+        // go between options
+        if (clicked_cell.state == GRID_STATE.COVERED) {
+          clicked_cell.state = GRID_STATE.FLAGGED;
+          num_marked++;
 
-        checkGame();
-      } else if (clicked_cell.state == GRID_STATE.FLAGGED) {
-        clicked_cell.state = GRID_STATE.QUESTION;
-        num_marked--;
+          checkGame();
+        } else if (clicked_cell.state == GRID_STATE.FLAGGED) {
+          clicked_cell.state = GRID_STATE.QUESTION;
+          num_marked--;
 
-      } else clicked_cell.state = GRID_STATE.COVERED;
-    } else if (mouseButton == CENTER) {
-      let visited = [];
-      let retval = checkNeighborsValued(clicked_cell, visited);
-
-      if (retval != null) {
-        for (let c of retval) {
-          let visited = [];
-          checkNeighbors(c, visited);
-        }
-      }
-    } else {
-      clicked_cell.state = GRID_STATE.CLEAR;
-
-      // visit all neighboring cells to clear them
-      if (clicked_cell.value == 0) {
+        } else clicked_cell.state = GRID_STATE.COVERED;
+      } else if (mouseButton == CENTER) {
         let visited = [];
-        checkNeighbors(clicked_cell, visited);
-      }
-      // mine clicked
-      else if (clicked_cell.value == -1) {
-        // alert("GAME OVER");
-        game_state = STATES.GAMEOVER;
-        GAMEOVER_TIMER = GAMEOVER_DELAY;
+        let retval = checkNeighborsValued(clicked_cell, visited);
 
-        for (let mc of mine_cells) {
-          mc.state = GRID_STATE.SHOW_BOMB;
+        if (retval != null) {
+          for (let c of retval) {
+            let visited = [];
+            checkNeighbors(c, visited);
+          }
         }
-        dirty = true;
-        // setupGame();
+      } else {
+        clicked_cell.state = GRID_STATE.CLEAR;
+
+        // visit all neighboring cells to clear them
+        if (clicked_cell.value == 0) {
+          let visited = [];
+          checkNeighbors(clicked_cell, visited);
+        }
+        // mine clicked
+        else if (clicked_cell.value == -1) {
+          // alert("GAME OVER");
+          game_state = STATES.GAME_LOST;
+          GAMEOVER_TIMER = GAMEOVER_DELAY;
+
+          for (let mc of mine_cells) {
+            mc.state = GRID_STATE.SHOW_BOMB;
+          }
+          dirty = true;
+          // setupGame();
+        }
       }
+      dirty = true;
     }
-    dirty = true;
   }
-}
 }
 
 // recursively visit neighbors
@@ -488,8 +496,12 @@ function checkGame() {
     if (c.value == -1 && c.state == GRID_STATE.FLAGGED) cnt++;
   }
   if (cnt == GAME_DATA[current_difficulty].num_mines) {
-    alert("YOU WIN");
-    setupGame();
+    game_state = STATES.GAME_WON;
+    GAMEOVER_TIMER = GAMEOVER_DELAY;
+    dirty = true;
+    // alert("YOU WIN");
+
+    // setupGame();
   }
 }
 
