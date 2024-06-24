@@ -1,7 +1,6 @@
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
 
-// MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
-// MARKING ALL AS MINES CAUSES YOU TO WIN
+// QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
 
 let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
@@ -492,16 +491,15 @@ function checkNeighborsValued(cell, visited_cells) {
 // check win condition
 function checkGame() {
   let cnt = 0;
+  let checked_cnt = 0;
   for (let c of cells) {
     if (c.value == -1 && c.state == GRID_STATE.FLAGGED) cnt++;
+    if (c.state == GRID_STATE.FLAGGED) checked_cnt++;
   }
-  if (cnt == GAME_DATA[current_difficulty].num_mines) {
+  if (cnt == GAME_DATA[current_difficulty].num_mines && cnt == checked_cnt) {
     game_state = STATES.GAME_WON;
     GAMEOVER_TIMER = GAMEOVER_DELAY;
     dirty = true;
-    // alert("YOU WIN");
-
-    // setupGame();
   }
 }
 
