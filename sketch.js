@@ -1,5 +1,9 @@
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
-let cell_w, half_cell;
+
+// MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
+// MARKING ALL AS MINES CAUSES YOU TO WIN
+
+let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
 let grid;
 let ui_w = 120;
@@ -9,8 +13,54 @@ let cells; // iterable list for drawing
 let hovering;
 let num_marked;
 
+let mine_cells;
+
+let game_state;
+let STATES = {
+  PLAYING: 0,
+  GAMEOVER: 1,
+}
+
+let bgcol;
+let GAMEOVER_DELAY = 100;
+let GAMEOVER_TIMER;
+
+
+let SPRITES = {
+  'covered': { r: 14, c: 39 },
+  // 'uncovered': { r: 0, c: 0 },
+  'marked': { r: 21, c: 35 },
+  'question': { r: 13, c: 37 },
+  'bomb': { r: 9, c: 45 },
+  'exploded': { r: 0, c: 0 },
+  '1': { r: 17, c: 36 },
+  '2': { r: 17, c: 37 },
+  '3': { r: 17, c: 38 },
+  '4': { r: 17, c: 39 },
+  '5': { r: 17, c: 40 },
+  '6': { r: 17, c: 41 },
+  '7': { r: 17, c: 42 },
+  '8': { r: 17, c: 43 },
+  '9': { r: 17, c: 44 },
+  '0': { r: 17, c: 35 }, // 35
+  'cursor': { r: 12, c: 38 },
+}
+
+// let explosions;
+let spritesheet;
+function preload() {
+  // explosions = [];
+  // for (let i = 0; i < 9; i++) {
+  // explosions[i] = loadImage(`./assets/PixelExplosion/pixelExplosion0${i}.png`);
+  // }
+
+  spritesheet = loadImage("./assets/colored-transparent_packed.png");
+}
 function setup() {
   createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
+  drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
+
+  bgcol = color(71, 45, 60);
 
   difficultyRadio = createRadio();
   difficultyRadio.position(0, 0);
@@ -19,7 +69,7 @@ function setup() {
   difficultyRadio.option("easy");
   difficultyRadio.option("medium");
   difficultyRadio.option("hard");
-  difficultyRadio.option("expert");
+  // difficultyRadio.option("expert");
   difficultyRadio.selected("easy");
 
   // difficultyRadio.mousePressed(updateDifficulty);
@@ -28,17 +78,48 @@ function setup() {
   textSize(24);
   textAlign(CENTER, CENTER);
 
+  imageMode(CENTER);
+
   setupGame();
 }
 
 function draw() {
-  if (dirty) {
-    background(220);
+  if (dirty && game_state == STATES.PLAYING) {
+    background(bgcol);
     drawGame();
 
     dirty = false;
+  } else if (game_state == STATES.GAMEOVER) { // animate explosions and then reset
+    background(bgcol);
+    fill(color(255,0,0,20));
+    noStroke();
+    rect(0,0,width,height);
+    drawGame();
+    GAMEOVER_TIMER--;
+
+    // let remaining_to_explode = 0;
+    // for (let mc of mine_cells) {
+    //   if (mc.explode_anim_frame == -2) remaining_to_explode++;
+    //   else {
+    //     if (mc.explode_anim_frame == -1 && random() > 0.90) { // kick off explosion cycle
+    //       mc.explode_anim_frame = 0;
+    //     } else {
+    //       if (mc.explode_anim_frame >= 0) {
+    //         image(explosions[mc.explode_anim_frame], mc.x, mc.y, cell_w, cell_w);
+    //         if (frameCount % 2 == 0)
+    //           mc.explode_anim_frame++;
+
+    //         if (mc.explode_anim_frame == explosions.length - 1) mc.explode_anim_frame = -2;
+    //       }
+    //     }
+    //   }
+    // }
+
+    // if (remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
+    if (GAMEOVER_TIMER == 0)
+      setupGame();
   }
-  
+
   // run in the loop to check if the radio button was updated
   // for some reason it has to be clicked twice to update when using mousePressed
   updateDifficulty();
@@ -56,22 +137,47 @@ function drawGame() {
   if (current_difficulty == "EASY" || current_difficulty == "MEDIUM") textSize(24);
   else textSize(12);
   for (let c of cells) {
-    stroke(color(20,20,20,100));
-    fill(color(COLORS[c.state]));
-    rect(c.x, c.y, cell_w, cell_w);
+    // stroke(color(0));//20, 20, 20, 100));
+    // fill(bgcol);//color(COLORS[c.state]));
+    // rect(c.x, c.y, cell_w, cell_w);
+    if (c.state != GRID_STATE.CLEAR) {
+      let sx = SPRITES.covered.c * 16;
+      let sy = SPRITES.covered.r * 16;
+      image(spritesheet, c.x + half_cell, c.y + half_cell, cell_w, cell_w, sx, sy, 16, 16);
+    }
 
     if (c.state == GRID_STATE.CLEAR) {
-      noStroke();
-      fill(0);
-      if (c.value != 0) text(c.value, c.x + half_cell, c.y + half_cell);
+      // noStroke();
+      // fill(0);
+      if (c.value != 0) {
+        let sx = SPRITES[c.value].c * 16;
+        let sy = SPRITES[c.value].r * 16;
+        image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+        // text(c.value, c.x + half_cell, c.y + half_cell);
+      } else {
+        noStroke();
+        fill(bgcol);//color(COLORS[c.state]));
+        rect(c.x, c.y, cell_w, cell_w);
+
+      }
     } else if (c.state == GRID_STATE.QUESTION) {
-      noStroke();
-      fill(color(255,255,0));
-      text("?", c.x + half_cell, c.y + half_cell);
+      // noStroke();
+      // fill(color(255, 255, 0));
+      // text("?", c.x + half_cell, c.y + half_cell);
+      let sx = SPRITES.question.c * 16;
+      let sy = SPRITES.question.r * 16;
+      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
     } else if (c.state == GRID_STATE.FLAGGED) {
-      noStroke();
-      fill(color(255,0,0));
-      text("!", c.x + half_cell, c.y + half_cell);
+      // noStroke();
+      let sx = SPRITES.marked.c * 16;
+      let sy = SPRITES.marked.r * 16;
+      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+      // fill(color(255, 0, 0));
+      // text("!", c.x + half_cell, c.y + half_cell);
+    } else if (c.state == GRID_STATE.SHOW_BOMB) {
+      let sx = SPRITES.bomb.c * 16;
+      let sy = SPRITES.bomb.r * 16;
+      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
     }
   }
 
@@ -93,24 +199,33 @@ function drawGame() {
   );
 
   if (hovering !== null) {
-    stroke(color(255, 0, 255));
-    strokeWeight(3);
-    noFill();
-    rect(hovering.x, hovering.y, cell_w, cell_w);
+      let sx = SPRITES.cursor.c * 16;
+      let sy = SPRITES.cursor.r * 16;
+      image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
+    // stroke(color(255, 0, 255));
+    // strokeWeight(3);
+    // noFill();
+    // rect(hovering.x, hovering.y, cell_w, cell_w);
   }
 }
 
 function setupGame() {
+  game_state = STATES.PLAYING;
+
   cell_w =
     (width - ui_w - 2 * ui_padding) / GAME_DATA[current_difficulty].grid_size;
   half_cell = cell_w / 2;
 
+  smaller_cell_w = cell_w - (cell_w * 0.25);
+  larger_cell_w = cell_w + (cell_w * 0.25);
+
   dirty = true;
   hovering = null;
   cells = [];
+  mine_cells = [];
   grid = [];
   num_marked = 0;
-  
+
   let x = ui_padding;
   let y = ui_padding;
 
@@ -124,8 +239,10 @@ function setupGame() {
         y: y,
         r: r,
         c: c,
+        // explode_anim_frame: -1,
       };
       cells.push(grid[r][c]);
+
       x += cell_w;
     }
     y += cell_w;
@@ -139,6 +256,7 @@ function setupGame() {
     if (c.value != -1) {
       c.value = -1;
       remaining--;
+      mine_cells.push(c); // easy access to mines
     }
   }
 
@@ -189,7 +307,7 @@ function mousePressed() {
       } else if (clicked_cell.state == GRID_STATE.FLAGGED) {
         clicked_cell.state = GRID_STATE.QUESTION;
         num_marked--;
-        
+
       } else clicked_cell.state = GRID_STATE.COVERED;
     } else if (mouseButton == CENTER) {
       let visited = [];
@@ -211,8 +329,15 @@ function mousePressed() {
       }
       // mine clicked
       else if (clicked_cell.value == -1) {
-        alert("GAME OVER");
-        setupGame();
+        // alert("GAME OVER");
+        game_state = STATES.GAMEOVER;
+        GAMEOVER_TIMER = GAMEOVER_DELAY;
+
+        for (let mc of mine_cells) {
+          mc.state = GRID_STATE.SHOW_BOMB;
+        }
+        dirty = true;
+        // setupGame();
       }
     }
     dirty = true;

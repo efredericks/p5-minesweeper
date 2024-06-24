@@ -17,6 +17,7 @@ GRID_STATE = {
   FLAGGED: 1, // flagged as mine
   QUESTION: 2, // unsure
   CLEAR: 3, // opened by user
+  SHOW_BOMB: 4, // gameover state - show bomb
 };
 
 // draw colors
