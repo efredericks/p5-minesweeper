@@ -11,6 +11,12 @@ GAME_DATA = {
   EXPERT: { grid_size: 64, num_mines: 300 },
 };
 
+// Game state machine
+let STATES = {
+  PLAYING: 0,
+  GAMEOVER: 1,
+}
+
 // visible state of grid
 GRID_STATE = {
   COVERED: 0, // not checked, blank square
@@ -32,10 +38,35 @@ COLORS.HOVER = "#cccccc";
 DIRECTIONS = [
   { c: -1, r: -1 },
   { c: 0, r: -1 },
-  { c: 1, r: -1 }, 
+  { c: 1, r: -1 },
   { c: -1, r: 0 },
-  { c: 1, r: 0 }, 
+  { c: 1, r: 0 },
   { c: -1, r: 1 },
   { c: 0, r: 1 },
-  { c: 1, r: 1 }, 
+  { c: 1, r: 1 },
 ];
+
+// spritesheet lookup
+let SPRITES = {
+  'covered': { r: 14, c: 39 },
+  // 'uncovered': { r: 0, c: 0 },
+  'marked': { r: 21, c: 35 },
+  'question': { r: 13, c: 37 },
+  'bomb': { r: 9, c: 45 },
+  'exploded': { r: 0, c: 0 },
+  '1': { r: 17, c: 36 },
+  '2': { r: 17, c: 37 },
+  '3': { r: 17, c: 38 },
+  '4': { r: 17, c: 39 },
+  '5': { r: 17, c: 40 },
+  '6': { r: 17, c: 41 },
+  '7': { r: 17, c: 42 },
+  '8': { r: 17, c: 43 },
+  '9': { r: 17, c: 44 },
+  '0': { r: 17, c: 35 }, 
+  'cursor': { r: 12, c: 38 },
+  'face_smile': { r: 14, c: 35 },
+  'face_mad': { r: 14, c: 36},
+  'face_happy': { r: 14, c: 37 },
+  'face_sad': { r: 14, c: 38 },
+}

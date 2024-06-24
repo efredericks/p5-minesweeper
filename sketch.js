@@ -16,35 +16,12 @@ let num_marked;
 let mine_cells;
 
 let game_state;
-let STATES = {
-  PLAYING: 0,
-  GAMEOVER: 1,
-}
 
-let bgcol;
+let bgcol, activecol;
 let GAMEOVER_DELAY = 100;
 let GAMEOVER_TIMER;
 
 
-let SPRITES = {
-  'covered': { r: 14, c: 39 },
-  // 'uncovered': { r: 0, c: 0 },
-  'marked': { r: 21, c: 35 },
-  'question': { r: 13, c: 37 },
-  'bomb': { r: 9, c: 45 },
-  'exploded': { r: 0, c: 0 },
-  '1': { r: 17, c: 36 },
-  '2': { r: 17, c: 37 },
-  '3': { r: 17, c: 38 },
-  '4': { r: 17, c: 39 },
-  '5': { r: 17, c: 40 },
-  '6': { r: 17, c: 41 },
-  '7': { r: 17, c: 42 },
-  '8': { r: 17, c: 43 },
-  '9': { r: 17, c: 44 },
-  '0': { r: 17, c: 35 }, // 35
-  'cursor': { r: 12, c: 38 },
-}
 
 // let explosions;
 let spritesheet;
@@ -61,6 +38,7 @@ function setup() {
   drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
 
   bgcol = color(71, 45, 60);
+  activecol = color(207, 198, 184);
 
   difficultyRadio = createRadio();
   difficultyRadio.position(0, 0);
@@ -91,9 +69,9 @@ function draw() {
     dirty = false;
   } else if (game_state == STATES.GAMEOVER) { // animate explosions and then reset
     background(bgcol);
-    fill(color(255,0,0,20));
+    fill(color(255, 0, 0, 20));
     noStroke();
-    rect(0,0,width,height);
+    rect(0, 0, width, height);
     drawGame();
     GAMEOVER_TIMER--;
 
@@ -182,26 +160,105 @@ function drawGame() {
   }
 
   // textAlign(RIGHT, CENTER);
-  stroke(20);
+  stroke(activecol);
   line(width - ui_w, 20, width - ui_w, height - 20);
   noStroke();
-  fill(20);
-  textSize(24);
+
+  // icon
+  let icon_size = ui_w * 0.75;
+  let half_icon = icon_size / 2;
+  let quarter_icon = icon_size / 4;
+
+  if (game_state == STATES.GAMEOVER) {
+    let sx = SPRITES.face_mad.c * 16;
+    let sy = SPRITES.face_mad.r * 16;
+    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
+
+  } else { // playing
+    let sx = SPRITES.face_smile.c * 16;
+    let sy = SPRITES.face_smile.r * 16;
+    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
+  }
+
+  // total mines
+  let num_mines_str = GAME_DATA[current_difficulty].num_mines.toString();
+  // let tx, ty;
+  // if (num_mines_str.length == 1) {
+  //   tx = width - ui_w / 2;
+  //   ty = icon_size * 1.95;
+
+  //   let sx = SPRITES[num_mines_str].c * 16;
+  //   let sy = SPRITES[num_mines_str].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+  // } else if (num_mines_str.length == 2) {
+  //   tx = width - ui_w / 2 - icon_size / 6;
+  //   ty = icon_size * 1.95;
+
+  //   let sx = SPRITES[num_mines_str[0]].c * 16;
+  //   let sy = SPRITES[num_mines_str[0]].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  //   tx = width - ui_w / 2 + icon_size / 6;
+  //   // ty = icon_size * 1.75;
+
+  //   sx = SPRITES[num_mines_str[1]].c * 16;
+  //   sy = SPRITES[num_mines_str[1]].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  // } else if (num_mines_str.length == 3) {
+  //   tx = width - ui_w / 2;
+  //   ty = icon_size * 1.95;
+
+  //   let sx = SPRITES[num_mines_str[1]].c * 16;
+  //   let sy = SPRITES[num_mines_str[1]].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  //   tx -= quarter_icon
+
+  //   sx = SPRITES[num_mines_str[0]].c * 16;
+  //   sy = SPRITES[num_mines_str[0]].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  //   tx += half_icon;
+
+  //   sx = SPRITES[num_mines_str[2]].c * 16;
+  //   sy = SPRITES[num_mines_str[2]].r * 16;
+  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  // } else {
+  //   alert("ERROR: NOT HANDLED");
+  // }
+
+  tx = width - ui_w*0.80;
+  ty = icon_size+icon_size*0.85;
+  sx = SPRITES.bomb.c * 16;
+  sy = SPRITES.bomb.r * 16;
+  image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
+
+  sx = SPRITES.marked.c * 16;
+  sy = SPRITES.marked.r * 16;
+  image(spritesheet, tx, ty+half_icon, half_icon, half_icon, sx, sy, 16, 16);
+
+  ty += quarter_icon;
+
+  fill(activecol);
+  textSize(48);
   text(
-    `Mines: ${GAME_DATA[current_difficulty].num_mines}`,
+    `${GAME_DATA[current_difficulty].num_mines}`,
     width - ui_w / 2,
-    30
+   ty 
   );
+  ty += 48;
   text(
-    `Marked: ${num_marked}`,
+    `${num_marked}`,
     width - ui_w / 2,
-    54
+    ty
   );
 
   if (hovering !== null) {
-      let sx = SPRITES.cursor.c * 16;
-      let sy = SPRITES.cursor.r * 16;
-      image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
+    let sx = SPRITES.cursor.c * 16;
+    let sy = SPRITES.cursor.r * 16;
+    image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
     // stroke(color(255, 0, 255));
     // strokeWeight(3);
     // noFill();
@@ -294,6 +351,7 @@ function checkPress(x, y) {
 }
 
 function mousePressed() {
+  if (game_state == STATES.PLAYING) {
   hovering = null;
   let clicked_cell = checkPress(mouseX, mouseY);
   if (clicked_cell != null) {
@@ -342,6 +400,7 @@ function mousePressed() {
     }
     dirty = true;
   }
+}
 }
 
 // recursively visit neighbors
