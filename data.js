@@ -71,4 +71,5 @@ let SPRITES = {
   'face_mad': { r: 14, c: 36},
   'face_happy': { r: 14, c: 37 },
   'face_sad': { r: 14, c: 38 },
+  'mouse': { r: 10, c: 37},
 }

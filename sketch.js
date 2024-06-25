@@ -1,7 +1,8 @@
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
 
 // QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
-// shift-click to clear
+
+// draw sprite function
 
 let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
@@ -21,6 +22,9 @@ let bgcol, activecol;
 let GAMEOVER_DELAY = 100;
 let GAMEOVER_TIMER;
 
+let icon_size;
+let half_icon;
+let quarter_icon;
 
 
 // let explosions;
@@ -62,6 +66,7 @@ function setup() {
 }
 
 function draw() {
+  dirty = true;
   if (dirty && game_state == STATES.PLAYING) {
     background(bgcol);
     drawGame();
@@ -102,6 +107,8 @@ function draw() {
       setupGame();
   }
 
+  drawMouse();
+
   // run in the loop to check if the radio button was updated
   // for some reason it has to be clicked twice to update when using mousePressed
   updateDifficulty();
@@ -113,6 +120,13 @@ function updateDifficulty() {
     setupGame();
   }
 }
+
+function drawMouse() {
+  let sx = SPRITES.mouse.c * 16;
+  let sy = SPRITES.mouse.r * 16;
+  image(spritesheet, mouseX + half_cell / 2, mouseY + half_cell / 2, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+}
+
 function drawGame() {
   // textAlign(CENTER, CENTER);
   strokeWeight(1);
@@ -169,9 +183,9 @@ function drawGame() {
   noStroke();
 
   // icon
-  let icon_size = ui_w * 0.75;
-  let half_icon = icon_size / 2;
-  let quarter_icon = icon_size / 4;
+  icon_size = ui_w * 0.75;
+  half_icon = icon_size / 2;
+  quarter_icon = icon_size / 4;
 
   if (game_state == STATES.GAME_LOST) {
     let sx = SPRITES.face_mad.c * 16;
@@ -266,7 +280,7 @@ function drawGame() {
   if (hovering !== null) {
     let sx = SPRITES.cursor.c * 16;
     let sy = SPRITES.cursor.r * 16;
-    image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
+    image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, hovering.w, hovering.w, sx, sy, 16, 16);
     // stroke(color(255, 0, 255));
     // strokeWeight(3);
     // noFill();
@@ -349,6 +363,7 @@ function setupGame() {
 
 // cell of pressed location
 function checkPress(x, y) {
+  // cell click
   if (cells !== undefined) {
     for (let c of cells) {
       if (x > c.x && x < c.x + cell_w && y > c.y && y < c.y + cell_w) return c;
@@ -396,19 +411,40 @@ function mousePressed() {
         // mine clicked
         else if (clicked_cell.value == -1) {
           // alert("GAME OVER");
-          game_state = STATES.GAME_LOST;
-          GAMEOVER_TIMER = GAMEOVER_DELAY;
-
-          for (let mc of mine_cells) {
-            mc.state = GRID_STATE.SHOW_BOMB;
-          }
-          dirty = true;
+          gameOver(false);
           // setupGame();
         }
       }
       dirty = true;
+    } else { // cell not clicked - check UI
+      // icon click
+      let sx = width - ui_w / 2;
+      if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
+        // game_state = STATES.GAME_LOST;
+        // GAMEOVER_TIMER = GAMEOVER_DELAY;
+        // setupGame();
+        gameOver(false);
+      }
+
+
     }
   }
+}
+
+// gameover state
+function gameOver(won) {
+  if (won) {
+    game_state = STATES.GAME_WON;
+    GAMEOVER_TIMER = GAMEOVER_DELAY;
+  } else {
+    game_state = STATES.GAME_LOST;
+    GAMEOVER_TIMER = GAMEOVER_DELAY;
+
+    for (let mc of mine_cells) {
+      mc.state = GRID_STATE.SHOW_BOMB;
+    }
+  }
+  dirty = true;
 }
 
 // recursively visit neighbors
@@ -498,9 +534,7 @@ function checkGame() {
     if (c.state == GRID_STATE.FLAGGED) checked_cnt++;
   }
   if (cnt == GAME_DATA[current_difficulty].num_mines && cnt == checked_cnt) {
-    game_state = STATES.GAME_WON;
-    GAMEOVER_TIMER = GAMEOVER_DELAY;
-    dirty = true;
+    gameOver(true);
   }
 }
 
@@ -509,7 +543,16 @@ function mouseMoved() {
   let clicked_cell = checkPress(mouseX, mouseY);
   if (clicked_cell != null) {
     hovering = clicked_cell;
+    hovering.w = larger_cell_w;
     dirty = true;
+  }
+
+  let sx = width - ui_w / 2;
+  if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
+    hovering = { x: sx - half_cell, y: icon_size - half_cell, w: icon_size * 1.25 };
+    // let sx = SPRITES.cursor.c * 16;
+    // let sy = SPRITES.cursor.r * 16;
+    // image(spritesheet, sx + half_cell, icon_size + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
   }
 }
 
