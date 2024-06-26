@@ -38,7 +38,7 @@ function preload() {
   spritesheet = loadImage("./assets/colored-transparent_packed.png");
 }
 function setup() {
-  createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
+  let canvas = createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
   drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
 
   bgcol = color(71, 45, 60);
@@ -62,7 +62,27 @@ function setup() {
 
   imageMode(CENTER);
 
+  canvas.touchStarted(touchStart);
+  canvas.touchEnded(touchEnd);
+
   setupGame();
+}
+
+let touchTimer;
+let touchValue;
+function touchStart() {
+  touchTimer = 0;
+  touchValue = {};
+}
+
+function touchEnd() {
+  if (touchTimer > 5) touchValue = { x: touches[0].x, y: touches[0].y, type: RIGHT };
+  else {
+    touchValue = { x: touches[0].x, y: touches[0].y, type: LEFT };
+    handleGenericPress(touchValue.x, touchValue.y, CENTER); // allow a left click to also try and clear
+  }
+
+  handleGenericPress(touchValue.x, touchValue.y, touchValue.type);
 }
 
 function draw() {
@@ -107,6 +127,7 @@ function draw() {
       setupGame();
   }
 
+  if (touchTimer > -1) touchTimer++;
   drawMouse();
 
   // run in the loop to check if the radio button was updated
@@ -291,6 +312,9 @@ function drawGame() {
 function setupGame() {
   game_state = STATES.PLAYING;
 
+  touchTimer = -1;
+  touchValue = {};
+
   cell_w =
     (width - ui_w - 2 * ui_padding) / GAME_DATA[current_difficulty].grid_size;
   half_cell = cell_w / 2;
@@ -373,12 +397,12 @@ function checkPress(x, y) {
   return null;
 }
 
-function mousePressed() {
+function handleGenericPress(x, y, type) {
   if (game_state == STATES.PLAYING) {
     hovering = null;
-    let clicked_cell = checkPress(mouseX, mouseY);
+    let clicked_cell = checkPress(x, y);
     if (clicked_cell != null) {
-      if (mouseButton == RIGHT && clicked_cell.state != GRID_STATE.CLEAR) {
+      if (type == RIGHT && clicked_cell.state != GRID_STATE.CLEAR) {
         // go between options
         if (clicked_cell.state == GRID_STATE.COVERED) {
           clicked_cell.state = GRID_STATE.FLAGGED;
@@ -390,7 +414,7 @@ function mousePressed() {
           num_marked--;
 
         } else clicked_cell.state = GRID_STATE.COVERED;
-      } else if (mouseButton == CENTER || (mouseButton == LEFT && keyIsPressed && key == "Shift")) {
+      } else if (type == CENTER || (type == LEFT && keyIsPressed && key == "Shift")) {
         let visited = [];
         let retval = checkNeighborsValued(clicked_cell, visited);
 
@@ -419,16 +443,18 @@ function mousePressed() {
     } else { // cell not clicked - check UI
       // icon click
       let sx = width - ui_w / 2;
-      if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
+      if (x > sx - half_cell && x < sx - half_cell + icon_size && y > icon_size - half_cell && y < icon_size * 2 - half_cell) {
         // game_state = STATES.GAME_LOST;
         // GAMEOVER_TIMER = GAMEOVER_DELAY;
         // setupGame();
         gameOver(false);
       }
-
-
     }
   }
+}
+
+function mousePressed() {
+  handleGenericPress(mouseX, mouseY, mouseButton);
 }
 
 // gameover state
