@@ -1,10 +1,11 @@
+// author: erik fredericks, 2024
+// minesweeper implemented in p5js
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
+// assets: kenney.nl 1-bit pack --> https://kenney.nl/assets/1-bit-pack
 
 // QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
 
-// draw sprite function
 // feedback on touch (highlight?)
-// disable left click on marked cell
 
 let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
@@ -231,7 +232,7 @@ function drawGame() {
   ty = icon_size + icon_size * 0.85;
   drawSprite(tx, ty, half_icon, half_icon, 'bomb');
   ty += quarter_icon;
-  drawSprite(tx, ty+quarter_icon, half_icon, half_icon, 'marked');
+  drawSprite(tx, ty + quarter_icon, half_icon, half_icon, 'marked');
 
   fill(activecol);
   textSize(48);
@@ -372,18 +373,22 @@ function handleGenericPress(x, y, type) {
           }
         }
       } else {
-        clicked_cell.state = GRID_STATE.CLEAR;
+        // only allow left click/press when cell isn't marked in any way
+        // mostly to avoid touch event accidental game over
+        if (clicked_cell.state == GRID_STATE.COVERED) {
+          clicked_cell.state = GRID_STATE.CLEAR;
 
-        // visit all neighboring cells to clear them
-        if (clicked_cell.value == 0) {
-          let visited = [];
-          checkNeighbors(clicked_cell, visited);
-        }
-        // mine clicked
-        else if (clicked_cell.value == -1) {
-          // alert("GAME OVER");
-          gameOver(false);
-          // setupGame();
+          // visit all neighboring cells to clear them
+          if (clicked_cell.value == 0) {
+            let visited = [];
+            checkNeighbors(clicked_cell, visited);
+          }
+          // mine clicked
+          else if (clicked_cell.value == -1) {
+            // alert("GAME OVER");
+            gameOver(false);
+            // setupGame();
+          }
         }
       }
       dirty = true;
