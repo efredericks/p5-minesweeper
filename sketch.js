@@ -33,13 +33,13 @@ let quarter_icon;
 let ui_buttons;
 
 
-// let explosions;
+let explosions;
 let spritesheet;
 function preload() {
-  // explosions = [];
-  // for (let i = 0; i < 9; i++) {
-  // explosions[i] = loadImage(`./assets/PixelExplosion/pixelExplosion0${i}.png`);
-  // }
+  explosions = [];
+  for (let i = 0; i < 9; i++) {
+    explosions[i] = loadImage(`./assets/PixelExplosion/pixelExplosion0${i}.png`);
+  }
 
   spritesheet = loadImage("./assets/colored-transparent_packed.png");
 }
@@ -141,26 +141,26 @@ function draw() {
     drawGame();
     GAMEOVER_TIMER--;
 
-    // let remaining_to_explode = 0;
-    // for (let mc of mine_cells) {
-    //   if (mc.explode_anim_frame == -2) remaining_to_explode++;
-    //   else {
-    //     if (mc.explode_anim_frame == -1 && random() > 0.90) { // kick off explosion cycle
-    //       mc.explode_anim_frame = 0;
-    //     } else {
-    //       if (mc.explode_anim_frame >= 0) {
-    //         image(explosions[mc.explode_anim_frame], mc.x, mc.y, cell_w, cell_w);
-    //         if (frameCount % 2 == 0)
-    //           mc.explode_anim_frame++;
+    let remaining_to_explode = 0;
+    for (let mc of mine_cells) {
+      if (mc.explode_anim_frame == -2) remaining_to_explode++;
+      else {
+        if (mc.explode_anim_frame == -1 && random() > 0.90) { // kick off explosion cycle
+          mc.explode_anim_frame = 0;
+        } else {
+          if (mc.explode_anim_frame >= 0) {
+            image(explosions[mc.explode_anim_frame], mc.x+half_cell, mc.y+half_cell, cell_w, cell_w);
+            if (frameCount % 2 == 0)
+              mc.explode_anim_frame++;
 
-    //         if (mc.explode_anim_frame == explosions.length - 1) mc.explode_anim_frame = -2;
-    //       }
-    //     }
-    //   }
-    // }
+            if (mc.explode_anim_frame == explosions.length - 1) mc.explode_anim_frame = -2;
+          }
+        }
+      }
+    }
 
-    // if (remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
-    if (GAMEOVER_TIMER == 0)
+    if (GAMEOVER_TIMER == 0 && remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
+    // if (GAMEOVER_TIMER == 0)
       setupGame();
   }
 
@@ -290,7 +290,7 @@ function setupGame() {
         y: y,
         r: r,
         c: c,
-        // explode_anim_frame: -1,
+        explode_anim_frame: -1,
       };
       cells.push(grid[r][c]);
 
