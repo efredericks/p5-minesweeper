@@ -1,14 +1,25 @@
 html, body {
   margin: 0;
   padding: 0;
+  /* background: #472d3c; */
   background: #eee;
+  color: #cfc6b8;
 }
 canvas {
   /* display: block; */
+  /* border: 1em solid #cfc6b8; */
   position: absolute;
+  padding: 0;
   /* cursor: none; */
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
+
+  /* https://getcssscan.com/css-box-shadow-examples */
+  border-radius: 0.85em;
+  box-shadow: rgba(0, 0, 0, 0.96) 0px 22px 70px 4px;
+  /* box-shadow: rgba(240, 46, 170, 0.4) -5px 5px, rgba(240, 46, 170, 0.3) -10px 10px, rgba(240, 46, 170, 0.2) -15px 15px, rgba(240, 46, 170, 0.1) -20px 20px, rgba(240, 46, 170, 0.05) -25px 25px; */
+  /* box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px; */
+  /* box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px; */
 }
 

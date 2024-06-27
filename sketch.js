@@ -3,6 +3,8 @@
 // QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
 
 // draw sprite function
+// feedback on touch (highlight?)
+// disable left click on marked cell
 
 let cell_w, half_cell, smaller_cell_w, larger_cell_w;
 let current_difficulty;
@@ -13,6 +15,7 @@ let dirty;
 let cells; // iterable list for drawing
 let hovering;
 let num_marked;
+// let bg_img;
 
 let mine_cells;
 
@@ -25,6 +28,8 @@ let GAMEOVER_TIMER;
 let icon_size;
 let half_icon;
 let quarter_icon;
+
+let ui_buttons;
 
 
 // let explosions;
@@ -41,21 +46,23 @@ function setup() {
   let canvas = createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
   drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
 
+  noiseDetail(random(4, 8), random(0.25, 0.85));
+
   bgcol = color(71, 45, 60);
   activecol = color(207, 198, 184);
 
-  difficultyRadio = createRadio();
-  difficultyRadio.position(0, 0);
-  // difficultyRadio.size(ui_w);
+  // difficultyRadio = createRadio();
+  // difficultyRadio.position(0, 0);
+  // // difficultyRadio.size(ui_w);
 
-  difficultyRadio.option("easy");
-  difficultyRadio.option("medium");
-  difficultyRadio.option("hard");
-  // difficultyRadio.option("expert");
-  difficultyRadio.selected("easy");
+  // difficultyRadio.option("easy");
+  // difficultyRadio.option("medium");
+  // difficultyRadio.option("hard");
+  // // difficultyRadio.option("expert");
+  // difficultyRadio.selected("easy");
 
   // difficultyRadio.mousePressed(updateDifficulty);
-  updateDifficulty();
+  updateDifficulty("EASY");
 
   textSize(24);
   textAlign(CENTER, CENTER);
@@ -66,6 +73,35 @@ function setup() {
   canvas.touchEnded(touchEnd);
 
   setupGame();
+
+  // preload a random tiled image and set as tiled bg
+  // let body = select('body');
+  // let bg_cells = 16;
+  // bg_img = createImage(16 * bg_cells, 16 * bg_cells);
+  // let bg_y = 0;
+  // let bg_x = 0;
+  // for (let r = 0; r < bg_cells; r++) {
+  //   for (let c = 0; c < bg_cells; c++) {
+  //     let n = noise(c * 0.1, r * 0.1);
+  //     let bg_cell = 'bg_open';
+  //     if (n < 0.2) bg_cell = 'bg_open';
+  //     else if (n < 0.3) bg_cell = 'bg_dirt1';
+  //     else if (n < 0.4) bg_cell = 'bg_grass1';
+  //     else if (n < 0.5) bg_cell = 'bg_dirt2';
+  //     else if (n < 0.6) bg_cell = 'bg_grass2';
+  //     else if (n < 0.7) bg_cell = 'bg_rocks1';
+  //     else if (n < 0.8) bg_cell = 'bg_grass3';
+  //     else if (n < 0.9) bg_cell = 'bg_rocks2';
+
+  //     let sx = SPRITES[bg_cell].c * 16;
+  //     let sy = SPRITES[bg_cell].r * 16;
+  //     bg_img.copy(spritesheet, sx, sy, 16, 16, bg_x, bg_y, 16, 16);//, sx, sy, 16, 16);
+
+  //     bg_x += 16;
+  //   }
+  //   bg_x = 0;
+  //   bg_y += 16;
+  // }
 }
 
 let touchTimer;
@@ -132,14 +168,16 @@ function draw() {
 
   // run in the loop to check if the radio button was updated
   // for some reason it has to be clicked twice to update when using mousePressed
-  updateDifficulty();
+  // updateDifficulty();
+  // image(bg_img, 0, 0)
 }
 
-function updateDifficulty() {
-  if (current_difficulty != difficultyRadio.value().toUpperCase()) {
-    current_difficulty = difficultyRadio.value().toUpperCase();
-    setupGame();
-  }
+function updateDifficulty(diff) {
+  current_difficulty = diff.toUpperCase();
+  // if (current_difficulty != difficultyRadio.value().toUpperCase()) {
+  // current_difficulty = difficultyRadio.value().toUpperCase();
+  setupGame();
+  // }
 }
 
 function drawMouse() {
@@ -203,25 +241,24 @@ function drawGame() {
   line(width - ui_w, 20, width - ui_w, height - 20);
   noStroke();
 
-  // icon
-  icon_size = ui_w * 0.75;
-  half_icon = icon_size / 2;
-  quarter_icon = icon_size / 4;
-
-  if (game_state == STATES.GAME_LOST) {
-    let sx = SPRITES.face_mad.c * 16;
-    let sy = SPRITES.face_mad.r * 16;
-    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
-  } else if (game_state == STATES.GAME_WON) {
-    let sx = SPRITES.face_happy.c * 16;
-    let sy = SPRITES.face_happy.r * 16;
-    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
-
-  } else { // playing
-    let sx = SPRITES.face_smile.c * 16;
-    let sy = SPRITES.face_smile.r * 16;
-    image(spritesheet, width - ui_w / 2, icon_size, icon_size, icon_size, sx, sy, 16, 16);
+  for (let ui_b of ui_buttons) {
+    if (ui_b.main_icon) { // main icon - special handling
+      let spr;
+      if (game_state == STATES.GAME_LOST) {
+        spr = 'face_mad';
+      } else if (game_state == STATES.GAME_WON) {
+        spr = 'face_happy';
+      } else { // playing
+        spr = 'face_smile';
+      }
+      let sx = SPRITES[spr].c * 16;
+      let sy = SPRITES[spr].r * 16;
+      image(spritesheet, ui_b.x, ui_b.y, ui_b.w, ui_b.h, sx, sy, 16, 16);
+    } else {
+      image(ui_b.gfx, ui_b.x + ui_b.w / 2, ui_b.y + ui_b.h / 2);
+    }
   }
+
 
   // total mines
   let num_mines_str = GAME_DATA[current_difficulty].num_mines.toString();
@@ -298,6 +335,7 @@ function drawGame() {
     ty
   );
 
+
   if (hovering !== null) {
     let sx = SPRITES.cursor.c * 16;
     let sy = SPRITES.cursor.r * 16;
@@ -311,6 +349,8 @@ function drawGame() {
 
 function setupGame() {
   game_state = STATES.PLAYING;
+
+  setupIcons();
 
   touchTimer = -1;
   touchValue = {};
@@ -441,14 +481,23 @@ function handleGenericPress(x, y, type) {
       }
       dirty = true;
     } else { // cell not clicked - check UI
-      // icon click
-      let sx = width - ui_w / 2;
-      if (x > sx - half_cell && x < sx - half_cell + icon_size && y > icon_size - half_cell && y < icon_size * 2 - half_cell) {
-        // game_state = STATES.GAME_LOST;
-        // GAMEOVER_TIMER = GAMEOVER_DELAY;
-        // setupGame();
-        gameOver(false);
+      for (let ui_b of ui_buttons) {
+        // if (x > ui_b.x - half_cell && x < ui_b.x - half_cell + ui_b.w && y > ui_b.y - half_cell && y < ui_b.y - half_cell + ui_b.h) {
+        if (
+          (ui_b.main_icon && x > ui_b.x - half_cell && x < ui_b.x - half_cell + ui_b.w && y > ui_b.y - half_cell && y < ui_b.y - half_cell + ui_b.h) ||
+          (!ui_b.main_icon && x > ui_b.x && x < ui_b.x + ui_b.w && y > ui_b.y && y < ui_b.y + ui_b.h)) {
+        // if (x > ui_b.x - smaller_cell_w/2 && x < ui_b.x - smaller_cell_w/2 + ui_b.w && y > ui_b.y - smaller_cell_w/2 && y < ui_b.y - smaller_cell_w/2 + ui_b.h) {
+          ui_b.callback.cb(ui_b.callback.arg);
+        }
       }
+      // // icon click
+      // let sx = width - ui_w / 2;
+      // if (x > sx - half_cell && x < sx - half_cell + icon_size && y > icon_size - half_cell && y < icon_size * 2 - half_cell) {
+      //   // game_state = STATES.GAME_LOST;
+      //   // GAMEOVER_TIMER = GAMEOVER_DELAY;
+      //   // setupGame();
+      //   gameOver(false);
+      // }
     }
   }
 }
@@ -586,3 +635,108 @@ function mouseMoved() {
 //   resizeCanvas(windowWidth, windowHeight);
 //   dirty = true;
 // }
+
+
+function setupIcons() {
+  ui_buttons = [];
+
+  // icon
+  icon_size = ui_w * 0.75;
+  half_icon = icon_size / 2;
+  quarter_icon = icon_size / 4;
+
+  ui_buttons.push({
+    x: width - ui_w / 2,
+    y: icon_size,
+    w: icon_size,
+    h: icon_size,
+    main_icon: true,
+    callback: { cb: gameOver, arg: false },
+  })
+
+  // difficulty buttons
+  let box_w = ui_w - 2 * ui_padding;
+  let box_h = 48;
+  let box_x = width - ui_w + ui_padding;
+  let box_y = height - ui_padding - box_h;
+
+  // hard
+  let ui_button_gfx_h = createGraphics(box_w, box_h);
+  ui_button_gfx_h.textAlign(CENTER, CENTER);
+  ui_button_gfx_h.textSize(18);
+
+  ui_button_gfx_h.stroke(color(activecol));
+  ui_button_gfx_h.noFill();
+  ui_button_gfx_h.rect(0, 0, box_w, box_h);
+  ui_button_gfx_h.fill(color(activecol));
+  ui_button_gfx_h.text("hard", box_w / 2, box_h / 2);
+
+  ui_buttons.push({
+    x: box_x,
+    y: box_y,
+    w: box_w,
+    h: box_h,
+    main_icon: false,
+    gfx: ui_button_gfx_h,
+    callback: { cb: updateDifficulty, arg: "hard" },
+  })
+
+  // medium
+  box_y -= ui_padding / 2 + box_h;
+  let ui_button_gfx_m = createGraphics(box_w, box_h);
+  ui_button_gfx_m.textAlign(CENTER, CENTER);
+  ui_button_gfx_m.textSize(18);
+
+  ui_button_gfx_m.stroke(color(activecol));
+  ui_button_gfx_m.noFill();
+  ui_button_gfx_m.rect(0, 0, box_w, box_h);
+  ui_button_gfx_m.fill(color(activecol));
+  ui_button_gfx_m.text("medium", box_w / 2, box_h / 2);
+
+  ui_buttons.push({
+    x: box_x,
+    y: box_y,
+    w: box_w,
+    h: box_h,
+    main_icon: false,
+    gfx: ui_button_gfx_m,
+    callback: { cb: updateDifficulty, arg: "medium" },
+  })
+
+  // rect(box_x, box_y, box_w, box_h);
+
+  // fill(color(activecol));
+  // text("medium", box_x + box_w / 2, box_y + box_h / 2);
+  // noFill();
+
+  // easy
+  box_y -= ui_padding / 2 + box_h;
+  let ui_button_gfx_e = createGraphics(box_w, box_h);
+  ui_button_gfx_e.textAlign(CENTER, CENTER);
+  ui_button_gfx_e.textSize(18);
+
+  ui_button_gfx_e.stroke(color(activecol));
+  ui_button_gfx_e.noFill();
+  ui_button_gfx_e.rect(0, 0, box_w, box_h);
+  ui_button_gfx_e.fill(color(activecol));
+  ui_button_gfx_e.text("easy", box_w / 2, box_h / 2);
+
+  ui_buttons.push({
+    x: box_x,
+    y: box_y,
+    w: box_w,
+    h: box_h,
+    main_icon: false,
+    gfx: ui_button_gfx_e,
+    callback: { cb: updateDifficulty, arg: "easy" },
+  })
+
+  // rect(box_x, box_y, box_w, box_h);
+
+  // fill(color(activecol));
+  // text("easy", box_x + box_w / 2, box_y + box_h / 2);
+  // noFill();
+
+  // rect(width-ui_w+ui_padding+box_w+ui_padding, height-48, 36, 36);
+
+}
