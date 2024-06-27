@@ -1,7 +1,9 @@
 // author: erik fredericks, 2024
 // minesweeper implemented in p5js
 // based on https://www.askpython.com/python/examples/create-minesweeper-using-python
-// assets: kenney.nl 1-bit pack --> https://kenney.nl/assets/1-bit-pack
+// assets: 
+//     * kenney.nl 1-bit pack --> https://kenney.nl/assets/1-bit-pack
+//     * kenney.nl explosion pack --> https://kenney.itch.io/kenney-game-assets
 
 // QUESTION MARKED AND THEN CLEARED DOESN'T CLEAR MARK!
 
@@ -141,27 +143,31 @@ function draw() {
     drawGame();
     GAMEOVER_TIMER--;
 
-    let remaining_to_explode = 0;
-    for (let mc of mine_cells) {
-      if (mc.explode_anim_frame == -2) remaining_to_explode++;
-      else {
-        if (mc.explode_anim_frame == -1 && random() > 0.90) { // kick off explosion cycle
-          mc.explode_anim_frame = 0;
-        } else {
-          if (mc.explode_anim_frame >= 0) {
-            image(explosions[mc.explode_anim_frame], mc.x+half_cell, mc.y+half_cell, cell_w, cell_w);
-            if (frameCount % 2 == 0)
-              mc.explode_anim_frame++;
+    if (game_state == STATES.GAME_LOST) {
+      let remaining_to_explode = 0;
+      for (let mc of mine_cells) {
+        if (mc.explode_anim_frame == -2) remaining_to_explode++;
+        else {
+          if (mc.explode_anim_frame == -1 && random() > 0.90) { // kick off explosion cycle
+            mc.explode_anim_frame = 0;
+          } else {
+            if (mc.explode_anim_frame >= 0) {
+              image(explosions[mc.explode_anim_frame], mc.x + half_cell, mc.y + half_cell, cell_w, cell_w);
+              if (frameCount % 2 == 0)
+                mc.explode_anim_frame++;
 
-            if (mc.explode_anim_frame == explosions.length - 1) mc.explode_anim_frame = -2;
+              if (mc.explode_anim_frame == explosions.length - 1) mc.explode_anim_frame = -2;
+            }
           }
         }
       }
+      if (GAMEOVER_TIMER == 0 && remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
+        setupGame();
+    } else {
+      if (GAMEOVER_TIMER == 0) // all done
+        setupGame();
     }
-
-    if (GAMEOVER_TIMER == 0 && remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
-    // if (GAMEOVER_TIMER == 0)
-      setupGame();
+    // if (GAMEOVER_TIMER == 0 && remaining_to_explode == GAME_DATA[current_difficulty].num_mines) // all done
   }
 
   if (touchTimer > -1) touchTimer++;
