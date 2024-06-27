@@ -529,12 +529,30 @@ function mouseMoved() {
     hovering = clicked_cell;
     hovering.w = larger_cell_w;
     dirty = true;
+    return;
   }
 
-  let sx = width - ui_w / 2;
-  if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
-    hovering = { x: sx - half_cell, y: icon_size - half_cell, w: icon_size * 1.25 };
+  // let sx = width - ui_w / 2;
+  // if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
+  //   hovering = { x: sx - half_cell, y: icon_size - half_cell, w: icon_size * 1.25 };
+  // }
+
+  for (let ui_b of ui_buttons) {
+    // probably have a bug somewhere in the click handlers, but icon is registering different than buttons
+    if (
+      (ui_b.main_icon && mouseX > ui_b.x - half_cell && mouseX < ui_b.x - half_cell + ui_b.w && mouseY > ui_b.y - half_cell && mouseY < ui_b.y - half_cell + ui_b.h) ||
+      (!ui_b.main_icon && mouseX > ui_b.x && mouseX < ui_b.x + ui_b.w && mouseY > ui_b.y && mouseY < ui_b.y + ui_b.h)) {
+      dirty = true;
+      if (ui_b.main_icon)
+        hovering = { x: ui_b.x - half_cell, y: ui_b.y - half_cell, w: ui_b.w * 1.25 };
+      else
+        hovering = { x: ui_b.x - half_cell + ui_b.w/2, y: ui_b.y-half_cell+ui_b.h/2, w: ui_b.w };//ui_b.h*1.25};
+      // ui_b.callback.cb(ui_b.callback.arg);
+    }
   }
+
+
+
 }
 
 // function windowResized() {
