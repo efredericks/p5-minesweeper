@@ -18,7 +18,7 @@ canvas {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-   z-index: 1;
+  z-index: 1;
 
   /* https://getcssscan.com/css-box-shadow-examples */
   border-radius: 0.85em;
@@ -65,7 +65,9 @@ canvas {
   font-style: normal;
 }
 
-.kanit-bold, footer a, footer {
+.kanit-bold,
+footer a,
+footer {
   font-family: "Kanit", sans-serif;
   font-weight: 700;
   font-style: normal;
@@ -119,7 +121,8 @@ canvas {
   font-style: italic;
 }
 
-.kanit-bold-italic, footer a:hover {
+.kanit-bold-italic,
+footer a:hover {
   font-family: "Kanit", sans-serif;
   font-weight: 700;
   font-style: italic;
@@ -139,17 +142,18 @@ canvas {
 
 
 /* sticky footer */
-body > footer {
+body>footer {
   position: sticky;
   top: 100vh;
-  background:#ccc;
+  background: #ccc;
   padding: 4px;
   text-align: center;
   color: #333;
   z-index: 0;
 }
+
 footer a {
   color: #333;
   font-weight: bold;
-  text-decoration:none;
+  text-decoration: none;
 }

@@ -165,78 +165,44 @@ function draw() {
 
   if (touchTimer > -1) touchTimer++;
   drawMouse();
-
-  // run in the loop to check if the radio button was updated
-  // for some reason it has to be clicked twice to update when using mousePressed
-  // updateDifficulty();
-  // image(bg_img, 0, 0)
 }
 
 function updateDifficulty(diff) {
   current_difficulty = diff.toUpperCase();
-  // if (current_difficulty != difficultyRadio.value().toUpperCase()) {
-  // current_difficulty = difficultyRadio.value().toUpperCase();
   setupGame();
-  // }
 }
 
 function drawMouse() {
-  let sx = SPRITES.mouse.c * 16;
-  let sy = SPRITES.mouse.r * 16;
-  image(spritesheet, mouseX + half_cell / 2, mouseY + half_cell / 2, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+  drawSprite(mouseX + half_cell / 2, mouseY + half_cell / 2, smaller_cell_w, smaller_cell_w, 'mouse');
 }
 
 function drawGame() {
-  // textAlign(CENTER, CENTER);
   strokeWeight(1);
   if (current_difficulty == "EASY" || current_difficulty == "MEDIUM") textSize(24);
   else textSize(12);
   for (let c of cells) {
-    // stroke(color(0));//20, 20, 20, 100));
-    // fill(bgcol);//color(COLORS[c.state]));
-    // rect(c.x, c.y, cell_w, cell_w);
     if (c.state != GRID_STATE.CLEAR) {
-      let sx = SPRITES.covered.c * 16;
-      let sy = SPRITES.covered.r * 16;
-      image(spritesheet, c.x + half_cell, c.y + half_cell, cell_w, cell_w, sx, sy, 16, 16);
+      drawSprite(c.x + half_cell, c.y + half_cell, cell_w, cell_w, 'covered');
     }
 
     if (c.state == GRID_STATE.CLEAR) {
-      // noStroke();
-      // fill(0);
       if (c.value != 0) {
-        let sx = SPRITES[c.value].c * 16;
-        let sy = SPRITES[c.value].r * 16;
-        image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
-        // text(c.value, c.x + half_cell, c.y + half_cell);
+        drawSprite(c.x + half_cell, c.y + half_cell, cell_w, cell_w, c.value.toString());
       } else {
         noStroke();
-        fill(bgcol);//color(COLORS[c.state]));
+        fill(bgcol);
         rect(c.x, c.y, cell_w, cell_w);
 
       }
     } else if (c.state == GRID_STATE.QUESTION) {
-      // noStroke();
-      // fill(color(255, 255, 0));
-      // text("?", c.x + half_cell, c.y + half_cell);
-      let sx = SPRITES.question.c * 16;
-      let sy = SPRITES.question.r * 16;
-      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+      drawSprite(c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, 'question');
     } else if (c.state == GRID_STATE.FLAGGED) {
-      // noStroke();
-      let sx = SPRITES.marked.c * 16;
-      let sy = SPRITES.marked.r * 16;
-      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
-      // fill(color(255, 0, 0));
-      // text("!", c.x + half_cell, c.y + half_cell);
+      drawSprite(c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, 'marked');
     } else if (c.state == GRID_STATE.SHOW_BOMB) {
-      let sx = SPRITES.bomb.c * 16;
-      let sy = SPRITES.bomb.r * 16;
-      image(spritesheet, c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, sx, sy, 16, 16);
+      drawSprite(c.x + half_cell, c.y + half_cell, smaller_cell_w, smaller_cell_w, 'bomb');
     }
   }
 
-  // textAlign(RIGHT, CENTER);
   stroke(activecol);
   line(width - ui_w, 20, width - ui_w, height - 20);
   noStroke();
@@ -251,9 +217,7 @@ function drawGame() {
       } else { // playing
         spr = 'face_smile';
       }
-      let sx = SPRITES[spr].c * 16;
-      let sy = SPRITES[spr].r * 16;
-      image(spritesheet, ui_b.x, ui_b.y, ui_b.w, ui_b.h, sx, sy, 16, 16);
+      drawSprite(ui_b.x, ui_b.y, ui_b.w, ui_b.h, spr);
     } else {
       image(ui_b.gfx, ui_b.x + ui_b.w / 2, ui_b.y + ui_b.h / 2);
     }
@@ -262,64 +226,12 @@ function drawGame() {
 
   // total mines
   let num_mines_str = GAME_DATA[current_difficulty].num_mines.toString();
-  // let tx, ty;
-  // if (num_mines_str.length == 1) {
-  //   tx = width - ui_w / 2;
-  //   ty = icon_size * 1.95;
-
-  //   let sx = SPRITES[num_mines_str].c * 16;
-  //   let sy = SPRITES[num_mines_str].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-  // } else if (num_mines_str.length == 2) {
-  //   tx = width - ui_w / 2 - icon_size / 6;
-  //   ty = icon_size * 1.95;
-
-  //   let sx = SPRITES[num_mines_str[0]].c * 16;
-  //   let sy = SPRITES[num_mines_str[0]].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  //   tx = width - ui_w / 2 + icon_size / 6;
-  //   // ty = icon_size * 1.75;
-
-  //   sx = SPRITES[num_mines_str[1]].c * 16;
-  //   sy = SPRITES[num_mines_str[1]].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  // } else if (num_mines_str.length == 3) {
-  //   tx = width - ui_w / 2;
-  //   ty = icon_size * 1.95;
-
-  //   let sx = SPRITES[num_mines_str[1]].c * 16;
-  //   let sy = SPRITES[num_mines_str[1]].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  //   tx -= quarter_icon
-
-  //   sx = SPRITES[num_mines_str[0]].c * 16;
-  //   sy = SPRITES[num_mines_str[0]].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  //   tx += half_icon;
-
-  //   sx = SPRITES[num_mines_str[2]].c * 16;
-  //   sy = SPRITES[num_mines_str[2]].r * 16;
-  //   image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  // } else {
-  //   alert("ERROR: NOT HANDLED");
-  // }
 
   tx = width - ui_w * 0.80;
   ty = icon_size + icon_size * 0.85;
-  sx = SPRITES.bomb.c * 16;
-  sy = SPRITES.bomb.r * 16;
-  image(spritesheet, tx, ty, half_icon, half_icon, sx, sy, 16, 16);
-
-  sx = SPRITES.marked.c * 16;
-  sy = SPRITES.marked.r * 16;
-  image(spritesheet, tx, ty + half_icon, half_icon, half_icon, sx, sy, 16, 16);
-
+  drawSprite(tx, ty, half_icon, half_icon, 'bomb');
   ty += quarter_icon;
+  drawSprite(tx, ty+quarter_icon, half_icon, half_icon, 'marked');
 
   fill(activecol);
   textSize(48);
@@ -335,18 +247,13 @@ function drawGame() {
     ty
   );
 
-
+  // hover over cells
   if (hovering !== null) {
-    let sx = SPRITES.cursor.c * 16;
-    let sy = SPRITES.cursor.r * 16;
-    image(spritesheet, hovering.x + half_cell, hovering.y + half_cell, hovering.w, hovering.w, sx, sy, 16, 16);
-    // stroke(color(255, 0, 255));
-    // strokeWeight(3);
-    // noFill();
-    // rect(hovering.x, hovering.y, cell_w, cell_w);
+    drawSprite(hovering.x + half_cell, hovering.y + half_cell, hovering.w, hovering.w, 'cursor');
   }
 }
 
+// reset all
 function setupGame() {
   game_state = STATES.PLAYING;
 
@@ -482,22 +389,13 @@ function handleGenericPress(x, y, type) {
       dirty = true;
     } else { // cell not clicked - check UI
       for (let ui_b of ui_buttons) {
-        // if (x > ui_b.x - half_cell && x < ui_b.x - half_cell + ui_b.w && y > ui_b.y - half_cell && y < ui_b.y - half_cell + ui_b.h) {
+        // probably have a bug somewhere in the click handlers, but icon is registering different than buttons
         if (
           (ui_b.main_icon && x > ui_b.x - half_cell && x < ui_b.x - half_cell + ui_b.w && y > ui_b.y - half_cell && y < ui_b.y - half_cell + ui_b.h) ||
           (!ui_b.main_icon && x > ui_b.x && x < ui_b.x + ui_b.w && y > ui_b.y && y < ui_b.y + ui_b.h)) {
-        // if (x > ui_b.x - smaller_cell_w/2 && x < ui_b.x - smaller_cell_w/2 + ui_b.w && y > ui_b.y - smaller_cell_w/2 && y < ui_b.y - smaller_cell_w/2 + ui_b.h) {
           ui_b.callback.cb(ui_b.callback.arg);
         }
       }
-      // // icon click
-      // let sx = width - ui_w / 2;
-      // if (x > sx - half_cell && x < sx - half_cell + icon_size && y > icon_size - half_cell && y < icon_size * 2 - half_cell) {
-      //   // game_state = STATES.GAME_LOST;
-      //   // GAMEOVER_TIMER = GAMEOVER_DELAY;
-      //   // setupGame();
-      //   gameOver(false);
-      // }
     }
   }
 }
@@ -625,9 +523,6 @@ function mouseMoved() {
   let sx = width - ui_w / 2;
   if (mouseX > sx - half_cell && mouseX < sx - half_cell + icon_size && mouseY > icon_size - half_cell && mouseY < icon_size * 2 - half_cell) {
     hovering = { x: sx - half_cell, y: icon_size - half_cell, w: icon_size * 1.25 };
-    // let sx = SPRITES.cursor.c * 16;
-    // let sy = SPRITES.cursor.r * 16;
-    // image(spritesheet, sx + half_cell, icon_size + half_cell, larger_cell_w, larger_cell_w, sx, sy, 16, 16);
   }
 }
 
@@ -703,12 +598,6 @@ function setupIcons() {
     callback: { cb: updateDifficulty, arg: "medium" },
   })
 
-  // rect(box_x, box_y, box_w, box_h);
-
-  // fill(color(activecol));
-  // text("medium", box_x + box_w / 2, box_y + box_h / 2);
-  // noFill();
-
   // easy
   box_y -= ui_padding / 2 + box_h;
   let ui_button_gfx_e = createGraphics(box_w, box_h);
@@ -730,13 +619,10 @@ function setupIcons() {
     gfx: ui_button_gfx_e,
     callback: { cb: updateDifficulty, arg: "easy" },
   })
+}
 
-  // rect(box_x, box_y, box_w, box_h);
-
-  // fill(color(activecol));
-  // text("easy", box_x + box_w / 2, box_y + box_h / 2);
-  // noFill();
-
-  // rect(width-ui_w+ui_padding+box_w+ui_padding, height-48, 36, 36);
-
+function drawSprite(x, y, w, h, spr) {
+  let sx = SPRITES[spr].c * 16;
+  let sy = SPRITES[spr].r * 16;
+  image(spritesheet, x, y, w, h, sx, sy, 16, 16);
 }
