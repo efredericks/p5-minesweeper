@@ -48,6 +48,7 @@ function preload() {
 function setup() {
   let canvas = createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
   drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
+  noSmooth();
 
   noiseDetail(random(4, 8), random(0.25, 0.85));
 
@@ -125,7 +126,8 @@ function touchEnd() {
 }
 
 function draw() {
-  dirty = true;
+  dirty = true; // redraw to avoid cursor smear on side - probably would be better to blit on that side but we're not doing anything processor-intensive anyway
+
   if (dirty && game_state == STATES.PLAYING) {
     background(bgcol);
     drawGame();
@@ -194,7 +196,8 @@ function drawGame() {
 
     if (c.state == GRID_STATE.CLEAR) {
       if (c.value != 0) {
-        drawSprite(c.x + half_cell, c.y + half_cell, cell_w, cell_w, c.value.toString());
+        // drawSprite(c.x + half_cell, c.y + half_cell, cell_w, cell_w, c.value.toString());
+        drawText(c.value.toString(), c.x+half_cell, c.y+half_cell,cell_w,cell_w);
       } else {
         noStroke();
         fill(bgcol);
@@ -240,19 +243,22 @@ function drawGame() {
   ty += quarter_icon;
   drawSprite(tx, ty + quarter_icon, half_icon, half_icon, 'marked');
 
-  fill(activecol);
-  textSize(48);
-  text(
-    `${GAME_DATA[current_difficulty].num_mines}`,
-    width - ui_w / 2,
-    ty
-  );
-  ty += 48;
-  text(
-    `${num_marked}`,
-    width - ui_w / 2,
-    ty
-  );
+  drawText(GAME_DATA[current_difficulty].num_mines.toString(), width - ui_w / 2, ty, half_icon, 'center');
+  ty += half_icon;
+  drawText(num_marked.toString(), width - ui_w / 2, ty, half_icon, 'center');
+  // fill(activecol);
+  // textSize(48);
+  // text(
+  //   `${GAME_DATA[current_difficulty].num_mines}`,
+  //   width - ui_w / 2,
+  //   ty
+  // );
+  // ty += 48;
+  // text(
+  //   `${num_marked}`,
+  //   width - ui_w / 2,
+  //   ty
+  // );
 
   // hover over cells
   if (hovering !== null) {
@@ -546,7 +552,7 @@ function mouseMoved() {
       if (ui_b.main_icon)
         hovering = { x: ui_b.x - half_cell, y: ui_b.y - half_cell, w: ui_b.w * 1.25 };
       else
-        hovering = { x: ui_b.x - half_cell + ui_b.w/2, y: ui_b.y-half_cell+ui_b.h/2, w: ui_b.w };//ui_b.h*1.25};
+        hovering = { x: ui_b.x - half_cell + ui_b.w / 2, y: ui_b.y - half_cell + ui_b.h / 2, w: ui_b.w };//ui_b.h*1.25};
       // ui_b.callback.cb(ui_b.callback.arg);
     }
   }
@@ -654,4 +660,18 @@ function drawSprite(x, y, w, h, spr) {
   let sx = SPRITES[spr].c * 16;
   let sy = SPRITES[spr].r * 16;
   image(spritesheet, x, y, w, h, sx, sy, 16, 16);
+}
+
+function drawText(txt, x, y, sz, align) {
+  let tw = txt.length * sz; // text width
+
+  // remember, all sprites middle-aligned
+  let start_x = x;
+  // if (txt.length > 1) start_x = x - tw / 2;
+
+  let _x = start_x;
+  for (let t of txt) {
+    drawSprite(_x, y, sz, sz, t);
+    _x += sz/2;
+  }
 }
