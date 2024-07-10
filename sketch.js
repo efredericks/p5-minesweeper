@@ -197,7 +197,7 @@ function drawGame() {
     if (c.state == GRID_STATE.CLEAR) {
       if (c.value != 0) {
         // drawSprite(c.x + half_cell, c.y + half_cell, cell_w, cell_w, c.value.toString());
-        drawText(c.value.toString(), c.x+half_cell, c.y+half_cell,cell_w,cell_w);
+        drawText(c.value.toString(), c.x + half_cell, c.y + half_cell, cell_w, cell_w);
       } else {
         noStroke();
         fill(bgcol);
@@ -368,7 +368,7 @@ function handleGenericPress(x, y, type) {
           clicked_cell.state = GRID_STATE.FLAGGED;
           num_marked++;
 
-          checkGame();
+          // checkGame();
         } else if (clicked_cell.state == GRID_STATE.FLAGGED) {
           clicked_cell.state = GRID_STATE.QUESTION;
           num_marked--;
@@ -404,6 +404,7 @@ function handleGenericPress(x, y, type) {
         }
       }
       dirty = true;
+      checkGame();
     } else { // cell not clicked - check UI
       for (let ui_b of ui_buttons) {
         // probably have a bug somewhere in the click handlers, but icon is registering different than buttons
@@ -672,6 +673,6 @@ function drawText(txt, x, y, sz, align) {
   let _x = start_x;
   for (let t of txt) {
     drawSprite(_x, y, sz, sz, t);
-    _x += sz/2;
+    _x += sz / 2;
   }
 }
