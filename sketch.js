@@ -117,7 +117,7 @@ function touchStart() {
 }
 
 function touchEnd() {
-  if (touchTimer > 5) touchValue = { x: touches[0].x, y: touches[0].y, type: RIGHT };
+  if (touchTimer > TOUCH_RIGHT_CLICK) touchValue = { x: touches[0].x, y: touches[0].y, type: RIGHT };
   else {
     touchValue = { x: touches[0].x, y: touches[0].y, type: LEFT };
     handleGenericPress(touchValue.x, touchValue.y, CENTER); // allow a left click to also try and clear
@@ -174,6 +174,9 @@ function draw() {
   }
 
   if (touchTimer > -1) touchTimer++;
+  if (touchTimer > TOUCH_RIGHT_CLICK) { // highlight cell for visual feedback
+    mouseMoved();
+  }
   drawMouse();
 }
 

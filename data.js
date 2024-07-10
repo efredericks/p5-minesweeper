@@ -83,3 +83,5 @@ let SPRITES = {
   'bg_grass2': { r: 0, c: 6 },
   'bg_grass3': { r: 0, c: 7 },
 }
+
+let TOUCH_RIGHT_CLICK = 24;
