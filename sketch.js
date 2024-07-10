@@ -47,6 +47,7 @@ function preload() {
 }
 function setup() {
   let canvas = createCanvas(600 + ui_w + 2 * ui_padding, 600 + 2 * ui_padding);
+  pixelDensity(1);
   drawingContext.imageSmoothingEnabled = false; // make sprites look nice scaled up
   noSmooth();
 
@@ -656,11 +657,14 @@ function setupIcons() {
     callback: { cb: updateDifficulty, arg: "easy" },
   })
 }
-
 function drawSprite(x, y, w, h, spr) {
   let sx = SPRITES[spr].c * 16;
   let sy = SPRITES[spr].r * 16;
-  image(spritesheet, x, y, w, h, sx, sy, 16, 16);
+
+  // hack for tiles coming in slightly blurry - probably a better way
+  if (w < 20) w = 16;
+  if (h < 20) h = 16;
+  image(spritesheet, x, y, Math.floor(w), Math.floor(h), sx, sy, 16, 16);
 }
 
 function drawText(txt, x, y, sz, align) {
